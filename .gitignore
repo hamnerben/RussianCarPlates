@@ -1,0 +1,61 @@
+# Python bytecode files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment directories
+env/
+venv/
+ENV/
+.venv/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Python Wheel files
+*.whl
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# PyCharm
+.idea/
+
+# VSCode
+.vscode/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+.dmypy.pid
+
+# Pytest
+.cache/
+
+# Coverage reports
+*.coverage
+*.coverage.*
+.coverage/
+
+# Sphinx documentation
+docs/_build/
+
+# pytest-related
+nosetests.xml
+coverage.xml
+*.cover
+
+# Vim swap files
+*.swp
+
+# MacOS system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
