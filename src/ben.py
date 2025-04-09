@@ -11,6 +11,7 @@ with open('src/data/train.csv', mode='r', encoding='utf-8') as file:
     plate_info = parse_license_plate(plate_number)
     price = row[3]
     
+    
     if plate_info.valid:
       print(f"Plate Number: {plate_number}, Region: {plate_info.region_name}, Price: {price}")
 # read the train csv in
