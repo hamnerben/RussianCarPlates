@@ -13,7 +13,9 @@ class LicensePlateInfo:
         self._government_info = None
         self._error = None
         self.price = None
-
+        self.plate_number = None
+        self.id = None
+        
     @property
     def valid(self): return self._valid
 
@@ -57,10 +59,13 @@ class LicensePlateInfo:
             'region_code': self._region_code,
             'region_name': self._region_name,
             'government_info': self._government_info,
-            'error': self._error
+            'error': self._error,
+            'price': self._price,
+            'plate_number': self.plate_number,
+            'id': self.id
         }
 
-def parse_license_plate(plate_number, price=None):
+def parse_license_plate(id, plate_number, price=None):
     VALID_LETTERS = set('ABEKMHOPCTYX')
     plate_info = LicensePlateInfo()
 
@@ -103,6 +108,8 @@ def parse_license_plate(plate_number, price=None):
     plate_info._region_code = region_code
     plate_info._region_name = region_name
     plate_info.price = price
+    plate_info.plate_number = plate_number
+    plate_info.id = id
 
     digit_value = int(digits)
     letters = letter1 + letter2 + letter3
