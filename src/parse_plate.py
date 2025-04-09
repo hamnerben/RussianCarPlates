@@ -1,4 +1,4 @@
-from supplemental_english import REGION_CODES, GOVERNMENT_CODES
+from data.supplemental_english import REGION_CODES, GOVERNMENT_CODES
 import re
 
 class LicensePlateInfo:
