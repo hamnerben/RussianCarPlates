@@ -27,3 +27,4 @@ if __name__ == "__main__":
   plate_info_list = get_license_plate_info_list(train=True)
   for plate_info in plate_info_list:
     print(f"Plate Number: {plate_info.plate_number}, Region: {plate_info.region_name}, Price: {plate_info.price}")
+    
