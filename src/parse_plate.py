@@ -12,10 +12,15 @@ class LicensePlateInfo:
         self._region_name = None
         self._government_info = None
         self._error = None
-        self.price = None
-        self.plate_number = None
-        self.id = None
-        
+        self._price = None
+        self._plate_number = None
+        self._id = None
+    @property
+    def id(self): return self._id
+    
+    @property
+    def plate_number(self): return self._plate_number    
+    
     @property
     def valid(self): return self._valid
 
@@ -61,8 +66,8 @@ class LicensePlateInfo:
             'government_info': self._government_info,
             'error': self._error,
             'price': self._price,
-            'plate_number': self.plate_number,
-            'id': self.id
+            'plate_number': self._plate_number,
+            'id': self._id
         }
 
 def parse_license_plate(id, plate_number, price=None):
@@ -107,9 +112,9 @@ def parse_license_plate(id, plate_number, price=None):
     plate_info._letter3 = letter3
     plate_info._region_code = region_code
     plate_info._region_name = region_name
-    plate_info.price = price
-    plate_info.plate_number = plate_number
-    plate_info.id = id
+    plate_info._price = price
+    plate_info._plate_number = plate_number
+    plate_info._id = id
 
     digit_value = int(digits)
     letters = letter1 + letter2 + letter3
