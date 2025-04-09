@@ -2,7 +2,7 @@ from parse_plate import *
 import csv
 # Open the train CSV file
 
-with open('data/train.csv', mode='r', encoding='utf-8') as file:
+with open('src/data/train.csv', mode='r', encoding='utf-8') as file:
   reader = csv.reader(file)
   next(reader)  # Skip the header row if it exists
 
