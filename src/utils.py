@@ -45,43 +45,45 @@ def seeShapeOfPlateInfo(samples=20):
   # print each attribute of the plate_info object
   plate_info_list = get_license_plate_info_list(train=True)
   for plate_info in plate_info_list[:samples]:
-      print(f"\nPlate Number: {plate_info.plate_number}")
-      # print(f"  ID: {plate_info.id}")
-      # print(f"  Region Name: {plate_info.region_name}")
-      # print(f"  Price: {plate_info.price}")
-      # print(f"  Valid: {plate_info.valid}")
-      # print(f"  Letter1: {plate_info.letter1}")
-      # print(f"  Digits: {plate_info.digits}")
-      # print(f"  Letter2: {plate_info.letter2}")
-      # print(f"  Letter3: {plate_info.letter3}")
-      # print(f"  Region Code: {plate_info.region_code}")
-      # print(f"  Error: {plate_info.error}")
-      print(f"  is_government: {plate_info._is_government_vehicle}")
-      print(f"  Government Info: ")
-      print(f"    Description: {plate_info.government_info['description']}")
-      # print(f"    Forbidden to buy: {plate_info.government_info['forbidden_to_buy']}")
-      # print(f"    Road advantage: {plate_info.government_info['road_advantage']}")
-      # print(f"    Significance level: {plate_info.government_info['significance_level']}")   
+    if(not plate_info.is_government_vehicle): continue
+    print(f"\nplate_number: {plate_info.plate_number}")
+    print(f"  id: {plate_info.id}")
+    print(f"  region_Name: {plate_info.region_name}")
+    print(f"  price: {plate_info.price}")
+    print(f"  valid: {plate_info.valid}")
+    print(f"  letter1: {plate_info.letter1}")
+    print(f"  digits: {plate_info.digits}")
+    print(f"  letter2: {plate_info.letter2}")
+    print(f"  letter3: {plate_info.letter3}")
+    print(f"  region_code: {plate_info.region_code}")
+    print(f"  Error: {plate_info.error}")
+    print(f"  is_government_vehicle: {plate_info._is_government_vehicle}")
+    print(f"  government_info: ")
+    print(f"    description: {plate_info.government_info['description']}")
+    print(f"    forbidden_to_buy: {plate_info.government_info['forbidden_to_buy']}")
+    print(f"    road_advantage: {plate_info.government_info['road_advantage']}")
+    print(f"    significance_level: {plate_info.government_info['significance_level']}")   
 
 if __name__ == "__main__":
-  seeShapeOfPlateInfo(5000)
+  seeShapeOfPlateInfo(10_000)
   
-  '''Plate Number: P141BY77
-  ID: 17
-  Region Name: Moscow
-  Price: 300000
-  Valid: True
-  Letter1: P
-  Digits: 141
-  Letter2: B
-  Letter3: Y
-  Region Code: 77
+'''plate_number: K585OO77
+  id: 9989
+  region_Name: Moscow
+  price: 1250000
+  valid: True
+  letter1: K
+  digits: 585
+  letter2: O
+  letter3: O
+  region_code: 77
   Error: None
-  Government Info: 
-    Description: Non-government vehicle
-    Forbidden to buy: False
-    Road advantage: False
-    Significance level: 0'''
+  is_government_vehicle: True
+  government_info:
+    description: Partially Constitutional Court plates
+    forbidden_to_buy: False
+    road_advantage: True
+    significance_level: 3'''
    
     
     # if(plate_info.government_info):

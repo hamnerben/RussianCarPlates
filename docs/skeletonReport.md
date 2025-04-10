@@ -1,5 +1,17 @@
 put notes for report here
 
+models:
+    - used the mean and then the max as our baseline "model" (102.8921, 198.5034)
+    - RNN ()
+    - random forest 
+        - initially focused on the regions, not much better than the baseline. 
+        - Then focused on is_gov and region info, still not much better but small improvement
+        - added in features like road advantage, significance. slight improvement
+        - scaling the features didn't seem to help
+        - added more features (region code, plate digits, plate length) and used grid search to find better hyperparams. this took way longer to run, but finally showed a significant improvement. also evaluated the importance of the features, so we could remove the unnecessary features
+
+
+
 notable features to maybe single out:
 - is it a government vehicle
 - which region is it from
