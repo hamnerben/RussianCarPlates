@@ -26,7 +26,7 @@ data = pd.DataFrame([{
 print("Encoding categorical features...")
 label_encoder = LabelEncoder()
 
-# Label encode the 'gov_description'
+# Label encode the 'gov_description' for the training data
 data['gov_description'] = label_encoder.fit_transform(data['gov_description'])
 
 # One-hot encode the 'region' column
@@ -67,8 +67,27 @@ test_data = pd.DataFrame([{
     'gov_significance_level': plate_info.government_info['significance_level'],  # Numeric
 } for plate_info in test_plate_info_list])
 
-# Label encode the 'gov_description' in the test set
+# Ensure 'gov_description' is a string in the test data
+test_data['gov_description'] = test_data['gov_description'].astype(str)
+
+# Handle unseen labels in the test set
 print("Encoding test data...")
+
+# Get the labels that were seen during training
+train_labels = label_encoder.classes_
+
+# Identify the labels in the test data that were not seen during training
+test_labels = test_data['gov_description'].unique()
+
+# New labels to handle
+unseen_labels = [label for label in test_labels if label not in train_labels]
+if unseen_labels:
+    print(f"Unseen labels found: {unseen_labels}")
+    
+    # Manually assign new labels by adding them to the label encoder's classes_
+    label_encoder.classes_ = np.append(label_encoder.classes_, unseen_labels)
+
+# Transform the test data's 'gov_description' using the updated encoder
 test_data['gov_description'] = label_encoder.transform(test_data['gov_description'])
 
 # One-hot encode the 'region' column in test data
