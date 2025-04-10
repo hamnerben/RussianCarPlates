@@ -2,41 +2,140 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import GridSearchCV
 from utils import get_license_plate_info_list
 
 import csv
 import numpy as np
+
+# Define SMAPE function
+def smape(y_true, y_pred):
+    numerator = np.abs(y_true - y_pred)
+    denominator = (np.abs(y_true) + np.abs(y_pred)) / 2
+    return np.mean(numerator / denominator) * 100
+
+# Define parameter grid
+param_grid = {
+    'n_estimators': [100, 200, 300],
+    'max_depth': [10, 20, None],
+    'min_samples_split': [2, 5, 10],
+}
+
 # this section is for the random forest model that focuses on the region info ---------------------------------------------------------------
+
+# # Load training data
+# plate_info_list = get_license_plate_info_list(train=True)
+# # plate info has valid, letter1, digits, letter2, letter3, region_code, region_name, government_info, error, price, plate_number, id
+
+# # Convert to DataFrame
+# data = pd.DataFrame([{
+#     'region': plate_info.region_name,
+#     'is_government': plate_info.government_info['forbidden_to_buy'],        # make these more important
+#     'price': float(plate_info.price)
+# } for plate_info in plate_info_list])
+
+# # Handle categorical data (e.g., region) using one-hot encoding
+# data = pd.get_dummies(data, columns=['region'], drop_first=True)
+
+# # Split features and target
+# X = data.drop(columns=['price'])
+# y = data['price']
+
+# # Split data into training and validation sets
+# X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# # Train the model
+# model = RandomForestRegressor(n_estimators=100, random_state=42)
+# model.fit(X_train, y_train)
+
+# # Validate the model
+# y_pred = model.predict(X_val)
+# mse = mean_squared_error(y_val, y_pred)
+# print(f"Mean Squared Error: {mse}")
+
+# # Load test data
+# test_plate_info_list = get_license_plate_info_list(train=False)
+
+# # Convert test data to DataFrame
+# test_data = pd.DataFrame([{
+#     'id': plate_info.id,
+#     'region': plate_info.region_name,
+#     'is_government': plate_info.government_info['forbidden_to_buy'],
+# } for plate_info in test_plate_info_list])
+
+# # Handle categorical data (e.g., region) using one-hot encoding
+# test_data = pd.get_dummies(test_data, columns=['region'], drop_first=True)
+
+# # Align test data columns with training data columns
+# test_features = test_data.drop(columns=['id'])  # Exclude ID from features
+# new_test_data = test_features.reindex(columns=X.columns, fill_value=0)
+
+# # Predict prices
+# test_data['price'] = model.predict(new_test_data)
+
+# # Save predictions to CSV
+# test_data[['id', 'price']].to_csv('src/data/submissions/region_forest_predicted_prices.csv', index=False)  # Export only ID and price
+
+# This section is for the random forest model that focuses on the region and government info ---------------------------------------------------------------
 
 # Load training data
 plate_info_list = get_license_plate_info_list(train=True)
-# plate info has valid, letter1, digits, letter2, letter3, region_code, region_name, government_info, error, price, plate_number, id
 
+print("lets go!")
 # Convert to DataFrame
 data = pd.DataFrame([{
+    'id': plate_info.id,
     'region': plate_info.region_name,
-    'is_government': plate_info.government_info['forbidden_to_buy'],        # make these more important
-    'price': float(plate_info.price)
+    'is_government': plate_info.is_government_vehicle,  # Include government status
+    'road_advantage': plate_info.government_info['road_advantage'],  # Include road advantage
+    'significance_level': plate_info.government_info['significance_level'],  # Include significance level
+    'price': float(plate_info.price),
+    'region_code': plate_info.region_code,  # Include region code for potential future use
+    'plate_digits': plate_info.digits,  # Include digits for potential future use
+    'plate_length': len(plate_info.plate_number),  # Include plate length for potential future use
 } for plate_info in plate_info_list])
 
 # Handle categorical data (e.g., region) using one-hot encoding
 data = pd.get_dummies(data, columns=['region'], drop_first=True)
-
+print("checkpt 1")
 # Split features and target
-X = data.drop(columns=['price'])
+X = data.drop(columns=['price', 'id'])  # Exclude price and ID from features
 y = data['price']
 
+print("checkpt 2")
 # Split data into training and validation sets
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
 
+print("checkpt 3")
+# Perform grid search
+grid_search = GridSearchCV(RandomForestRegressor(random_state=42), param_grid, cv=3, scoring='neg_mean_squared_error')
+print("checkpt 3.1")
+grid_search.fit(X_train, y_train)
+
+print("checkpt 4")
+# Use the best model
+model = grid_search.best_estimator_
+
+print("checkpt 5")
+# Get feature importance
+feature_importances = model.feature_importances_
+feature_names = X.columns
+importance_df = pd.DataFrame({'Feature': feature_names, 'Importance': feature_importances}).sort_values(by='Importance', ascending=False)
+print(importance_df)
+
 # Train the model
-model = RandomForestRegressor(n_estimators=100, random_state=42)
-model.fit(X_train, y_train)
+# model = RandomForestRegressor(n_estimators=100, random_state=42)
+# model.fit(X_train, y_train)
 
 # Validate the model
 y_pred = model.predict(X_val)
 mse = mean_squared_error(y_val, y_pred)
-print(f"Mean Squared Error: {mse}")
+smape_score = smape(y_val, y_pred)  # Calculate SMAPE
+
+# Print validation metrics
+print(f"Mean Squared Error (Region + Government Model): {mse}")
+print(f"SMAPE (Region + Government Model): {smape_score}%")
 
 # Load test data
 test_plate_info_list = get_license_plate_info_list(train=False)
@@ -45,7 +144,12 @@ test_plate_info_list = get_license_plate_info_list(train=False)
 test_data = pd.DataFrame([{
     'id': plate_info.id,
     'region': plate_info.region_name,
-    'is_government': plate_info.government_info['forbidden_to_buy'],
+    'is_government': plate_info.is_government_vehicle,  # Include government status
+    'road_advantage': plate_info.government_info['road_advantage'],  # Include road advantage
+    'significance_level': plate_info.government_info['significance_level'],  # Include significance level
+    'region_code': plate_info.region_code,  # Include region code for potential future use
+    'plate_digits': plate_info.digits,  # Include digits for potential future use
+    'plate_length': len(plate_info.plate_number),  # Include plate length for potential future use
 } for plate_info in test_plate_info_list])
 
 # Handle categorical data (e.g., region) using one-hot encoding
@@ -53,58 +157,15 @@ test_data = pd.get_dummies(test_data, columns=['region'], drop_first=True)
 
 # Align test data columns with training data columns
 test_features = test_data.drop(columns=['id'])  # Exclude ID from features
-new_test_data = test_features.reindex(columns=X.columns, fill_value=0)
+test_features = test_features.reindex(columns=X.columns, fill_value=0)  # Align with training data columns
+
+# Scale numerical features
+scaler = StandardScaler()
+data[['road_advantage', 'significance_level']] = scaler.fit_transform(data[['road_advantage', 'significance_level']])
+test_data[['road_advantage', 'significance_level']] = scaler.transform(test_data[['road_advantage', 'significance_level']])
 
 # Predict prices
-test_data['price'] = model.predict(new_test_data)
+test_data['price'] = model.predict(test_features)
 
 # Save predictions to CSV
-test_data[['id', 'price']].to_csv('src/data/submissions/region_forest_predicted_prices.csv', index=False)  # Export only ID and price
-
-# This section is for the random forest model that focuses on the government info ---------------------------------------------------------------
-
-# Load training data
-plate_info_list = get_license_plate_info_list(train=True)
-
-# Convert to DataFrame
-gov_data = pd.DataFrame([{
-    'id': plate_info.id,
-    'is_government': plate_info.government_info['forbidden_to_buy'],
-    'road_advantage': plate_info.government_info['road_advantage'],
-    'significance_level': plate_info.government_info['significance_level'],
-    'price': float(plate_info.price)
-} for plate_info in plate_info_list])
-
-# Split features and target
-X_gov = gov_data.drop(columns=['price', 'id'])  # Exclude price and ID from features
-y_gov = gov_data['price']
-
-# Split data into training and validation sets
-X_train_gov, X_val_gov, y_train_gov, y_val_gov = train_test_split(X_gov, y_gov, test_size=0.2, random_state=42)
-
-# Train the model
-gov_model = RandomForestRegressor(n_estimators=100, random_state=42)
-gov_model.fit(X_train_gov, y_train_gov)
-
-# Validate the model
-y_pred_gov = gov_model.predict(X_val_gov)
-gov_mse = mean_squared_error(y_val_gov, y_pred_gov)
-print(f"Mean Squared Error (Government-Focused Model): {gov_mse}")
-
-# Load test data
-test_plate_info_list = get_license_plate_info_list(train=False)
-
-# Convert test data to DataFrame
-test_gov_data = pd.DataFrame([{
-    'id': plate_info.id,
-    'is_government': plate_info.government_info['forbidden_to_buy'],
-    'road_advantage': plate_info.government_info['road_advantage'],
-    'significance_level': plate_info.government_info['significance_level'],
-} for plate_info in test_plate_info_list])
-
-# Predict prices
-test_gov_features = test_gov_data.drop(columns=['id'])  # Exclude ID from features
-test_gov_data['price'] = gov_model.predict(test_gov_features)
-
-# Save predictions to CSV
-test_gov_data[['id', 'price']].to_csv('src/data/gov_forest_predicted_prices.csv', index=False)  # Export only ID and price
+test_data[['id', 'price']].to_csv('src/data/submissions/scaled_forest_predicted_prices.csv', index=False)  # Export only ID and price
