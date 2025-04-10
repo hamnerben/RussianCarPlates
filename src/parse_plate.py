@@ -10,11 +10,19 @@ class LicensePlateInfo:
         self._letter3 = None
         self._region_code = None
         self._region_name = None
-        self._government_info = None
+        self._government_info = None  # dictionary see below
         self._error = None
         self._price = None
         self._plate_number = None
         self._id = None
+        
+        '''plate_info._government_info = {
+                'description': string,
+                'forbidden_to_buy': bool,
+                'road_advantage': bool,
+                'significance_level': string
+            }'''
+        
     @property
     def id(self): return self._id
     
