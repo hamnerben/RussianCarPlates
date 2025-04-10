@@ -1,108 +1,137 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
-from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import mean_squared_error, make_scorer
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import GridSearchCV
 from utils import get_license_plate_info_list
+
+import csv
 import numpy as np
 
+# Define SMAPE function
+def smape(y_true, y_pred):
+    numerator = np.abs(y_true - y_pred)
+    denominator = (np.abs(y_true) + np.abs(y_pred)) / 2
+    return np.mean(numerator / denominator) * 100
+
+# Use make_scorer to create a scoring object for GridSearchCV
+smape_scorer = make_scorer(smape, greater_is_better=False)
+
+# Define parameter grid
+param_grid = {
+    'n_estimators': [100, 200],  # Number of trees, commonly used values.
+    'max_depth': [10, 20, None],  # Depth of the trees; None means trees are expanded until pure.
+    'min_samples_split': [2, 10],  # Minimum number of samples required to split an internal node.
+    'min_samples_leaf': [1, 2],  # Minimum number of samples required to be at a leaf node.
+    'bootstrap': [True, False],  # Whether bootstrap samples are used when building trees.
+}
+
+
 # Load training data
-print("Loading training data...")
 plate_info_list = get_license_plate_info_list(train=True)
+print("Training data loaded successfully!")
 
 # Convert to DataFrame
-print("Converting training data to DataFrame...")
 data = pd.DataFrame([{
+    'id': plate_info.id,
     'region': plate_info.region_name,
-    'is_government': plate_info.is_government_vehicle,  # 1 for True, 0 for False
-    'gov_description': plate_info.government_info['description'],  # Will be label encoded
-    'gov_forbidden_to_buy': int(plate_info.government_info['forbidden_to_buy']),  # 1 for True, 0 for False
-    'gov_road_advantage': int(plate_info.government_info['road_advantage']),  # 1 for True, 0 for False
-    'gov_significance_level': plate_info.government_info['significance_level'],  # Numeric
-    'price': float(plate_info.price),  # Target value
+    'is_government': plate_info.is_government_vehicle,  # Include government status
+    'road_advantage': plate_info.government_info['road_advantage'],  # Include road advantage
+    'significance_level': plate_info.government_info['significance_level'],  # Include significance level
+    'price': float(plate_info.price),
+    'region_code': plate_info.region_code,  # Include region code for potential future use
+    'plate_digits': plate_info.digits,  # Include digits for potential future use
+    'plate_length': len(plate_info.plate_number),  # Include plate length for potential future use
 } for plate_info in plate_info_list])
 
-# Handle categorical data using LabelEncoder and One-Hot Encoding
-print("Encoding categorical features...")
-label_encoder = LabelEncoder()
+print("DataFrame created successfully with all required features.")
 
-# Label encode the 'gov_description' for the training data
-data['gov_description'] = label_encoder.fit_transform(data['gov_description'])
-
-# One-hot encode the 'region' column
+# Handle categorical data (e.g., region) using one-hot encoding
 data = pd.get_dummies(data, columns=['region'], drop_first=True)
+print("Categorical variables encoded using one-hot encoding.")
 
 # Split features and target
-X = data.drop(columns=['price'])
+X = data.drop(columns=['price', 'id'])  # Exclude price and ID from features
 y = data['price']
+print("Data split into features (X) and target (y).")
 
 # Split data into training and validation sets
-print("Splitting data into training and validation sets...")
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+print("Training and validation data split (80-20).")
 
-# Train the model
-print("Training the model...")
-model = RandomForestRegressor(n_estimators=100, random_state=42)
-model.fit(X_train, y_train)
+# Perform grid search
+grid_search = GridSearchCV(
+    RandomForestRegressor(random_state=42),
+    param_grid,
+    cv=3,
+    scoring=smape_scorer
+)
+print("Starting Grid Search for hyperparameter tuning.")
+
+grid_search.fit(X_train, y_train)
+print("Grid Search completed. Best parameters found.")
+print("Best hyperparameters:", grid_search.best_params_)
+
+
+# Use the best model
+model = grid_search.best_estimator_
+print("Best model selected based on grid search.")
+
+# Get feature importance
+feature_importances = model.feature_importances_
+feature_names = X.columns
+importance_df = pd.DataFrame({'Feature': feature_names, 'Importance': feature_importances}).sort_values(by='Importance', ascending=False)
+print("Feature importances calculated and sorted:")
+print(importance_df)
 
 # Validate the model
-print("Validating the model...")
 y_pred = model.predict(X_val)
 mse = mean_squared_error(y_val, y_pred)
-print(f"Mean Squared Error: {mse}")
+smape_score = smape(y_val, y_pred)  # Calculate SMAPE
+
+# Print validation metrics
+print(f"Validation Metrics:")
+print(f"Mean Squared Error (Region + Government Model): {mse}")
+print(f"SMAPE (Region + Government Model): {smape_score}%")
 
 # Load test data
-print("Loading test data...")
 test_plate_info_list = get_license_plate_info_list(train=False)
+print("Test data loaded successfully!")
 
 # Convert test data to DataFrame
-print("Converting test data to DataFrame...")
 test_data = pd.DataFrame([{
     'id': plate_info.id,
     'region': plate_info.region_name,
-    'is_government': plate_info.is_government_vehicle,  # 1 for True, 0 for False
-    'gov_description': plate_info.government_info['description'],  # Will be label encoded
-    'gov_forbidden_to_buy': int(plate_info.government_info['forbidden_to_buy']),  # 1 for True, 0 for False
-    'gov_road_advantage': int(plate_info.government_info['road_advantage']),  # 1 for True, 0 for False
-    'gov_significance_level': plate_info.government_info['significance_level'],  # Numeric
+    'is_government': plate_info.is_government_vehicle,  # Include government status
+    'road_advantage': plate_info.government_info['road_advantage'],  # Include road advantage
+    'significance_level': plate_info.government_info['significance_level'],  # Include significance level
+    'region_code': plate_info.region_code,  # Include region code for potential future use
+    'plate_digits': plate_info.digits,  # Include digits for potential future use
+    'plate_length': len(plate_info.plate_number),  # Include plate length for potential future use
 } for plate_info in test_plate_info_list])
 
-# Ensure 'gov_description' is a string in the test data
-test_data['gov_description'] = test_data['gov_description'].astype(str)
+print("Test data converted to DataFrame.")
 
-# Handle unseen labels in the test set
-print("Encoding test data...")
-
-# Get the labels that were seen during training
-train_labels = label_encoder.classes_
-
-# Identify the labels in the test data that were not seen during training
-test_labels = test_data['gov_description'].unique()
-
-# New labels to handle
-unseen_labels = [label for label in test_labels if label not in train_labels]
-if unseen_labels:
-    print(f"Unseen labels found: {unseen_labels}")
-    
-    # Manually assign new labels by adding them to the label encoder's classes_
-    label_encoder.classes_ = np.append(label_encoder.classes_, unseen_labels)
-
-# Transform the test data's 'gov_description' using the updated encoder
-test_data['gov_description'] = label_encoder.transform(test_data['gov_description'])
-
-# One-hot encode the 'region' column in test data
+# Handle categorical data (e.g., region) using one-hot encoding
 test_data = pd.get_dummies(test_data, columns=['region'], drop_first=True)
+print("Test data categorical variables encoded using one-hot encoding.")
 
 # Align test data columns with training data columns
-print("Aligning test data columns with training data...")
 test_features = test_data.drop(columns=['id'])  # Exclude ID from features
-new_test_data = test_features.reindex(columns=X.columns, fill_value=0)
+test_features = test_features.reindex(columns=X.columns, fill_value=0)  # Align with training data columns
+print("Test data columns aligned with training data columns.")
+
+# Scale numerical features
+scaler = StandardScaler()
+data[['road_advantage', 'significance_level']] = scaler.fit_transform(data[['road_advantage', 'significance_level']])
+test_data[['road_advantage', 'significance_level']] = scaler.transform(test_data[['road_advantage', 'significance_level']])
+print("Numerical features scaled using StandardScaler.")
 
 # Predict prices
-print("Predicting prices...")
-test_data['price'] = model.predict(new_test_data)
+test_data['price'] = model.predict(test_features)
+print("Predictions for test data completed.")
 
 # Save predictions to CSV
-print("Saving predictions to CSV...")
-test_data[['id', 'price']].to_csv('src/data/submissions/ben_fullfeatures_forest_predicted_prices.csv', index=False)
-print("Predictions saved.")
+test_data[['id', 'price']].to_csv('src/data/submissions/scaled_forest_predicted_prices.csv', index=False)
+print("Predictions saved to CSV file: scaled_forest_predicted_prices.csv")
