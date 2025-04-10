@@ -14,8 +14,9 @@ plate_info_list = get_license_plate_info_list(train=True)
 # Convert to DataFrame
 data = pd.DataFrame([{
     'region': plate_info.region_name,
-    'is_government': plate_info.government_info['forbidden_to_buy'],        # make these more important
+    'is_government': plate_info.is_government_vehicle,  # make these more important
     'price': float(plate_info.price)
+    
 } for plate_info in plate_info_list])
 
 # Handle categorical data (e.g., region) using one-hot encoding
@@ -44,7 +45,8 @@ test_plate_info_list = get_license_plate_info_list(train=False)
 test_data = pd.DataFrame([{
     'id': plate_info.id,
     'region': plate_info.region_name,
-    'is_government': plate_info.government_info['forbidden_to_buy'],
+    'is_government': plate_info.is_government_vehicle,
+    
 } for plate_info in test_plate_info_list])
 
 # Handle categorical data (e.g., region) using one-hot encoding
