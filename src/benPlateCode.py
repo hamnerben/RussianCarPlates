@@ -48,7 +48,7 @@ test_data = pd.DataFrame([{
 } for plate_info in test_plate_info_list])
 
 # Handle categorical data (e.g., region) using one-hot encoding
-test_data = pd.get_dummies(test_data, columns=['region'], drop_first=True)
+test_data = pd.get_dummies(test_data, columns=['is_government'], drop_first=True)
 
 # Align test data columns with training data columns
 test_features = test_data.drop(columns=['id'])  # Exclude ID from features
@@ -58,4 +58,4 @@ new_test_data = test_features.reindex(columns=X.columns, fill_value=0)
 test_data['price'] = model.predict(new_test_data)
 
 # Save predictions to CSV
-test_data[['id', 'price']].to_csv('src/data/submissions/region_forest_predicted_prices.csv', index=False)  # Export only ID and price
+test_data[['id', 'price']].to_csv('src/data/submissions/government_forest_predicted_prices.csv', index=False)  # Export only ID and price
