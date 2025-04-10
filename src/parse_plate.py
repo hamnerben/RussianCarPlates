@@ -15,6 +15,7 @@ class LicensePlateInfo:
         self._price = None
         self._plate_number = None
         self._id = None
+        self._is_government_vehicle = None
         
         '''plate_info._government_info = {
                 'description': string,
@@ -50,6 +51,10 @@ class LicensePlateInfo:
     @property
     def region_name(self): return self._region_name
 
+    @property
+    def is_government_vehicle(self):
+        return bool(self._government_info and self._government_info['description'] != 'Non-government vehicle')
+    
     @property
     def government_info(self): return self._government_info
 
@@ -132,6 +137,7 @@ def parse_license_plate(id, plate_number, price=None):
         'significance_level': 0
     }
 
+    plate_info._is_government_vehicle = False
     # Check if the plate matches any government plate conditions
     digit_value = int(digits)
     letters = letter1 + letter2 + letter3
@@ -145,6 +151,7 @@ def parse_license_plate(id, plate_number, price=None):
                 'road_advantage': bool(advantage),
                 'significance_level': significance
             }
+            plate_info._is_government_vehicle = True
             break
 
     return plate_info
