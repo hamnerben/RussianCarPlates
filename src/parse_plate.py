@@ -124,6 +124,15 @@ def parse_license_plate(id, plate_number, price=None):
     plate_info._plate_number = plate_number
     plate_info._id = id
 
+    # Default government_info for non-government plates
+    plate_info._government_info = {
+        'description': 'Non-government vehicle',
+        'forbidden_to_buy': False,
+        'road_advantage': False,
+        'significance_level': 0
+    }
+
+    # Check if the plate matches any government plate conditions
     digit_value = int(digits)
     letters = letter1 + letter2 + letter3
     for (gov_letters, (digits_from, digits_to), gov_region), (description, forbidden, advantage, significance) in GOVERNMENT_CODES.items():
