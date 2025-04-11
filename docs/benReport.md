@@ -36,3 +36,19 @@ RANDOM_STATE = 42
 'is_government': plate_info.is_government_vehicle,
 'road_advantage': plate_info.government_info['road_advantage'],
 'significance_level': plate_info.government_info['significance_level'],
+
+SMAPE: 77.51% "tried dropping least important, but decreased"
+N_ESTIMATORS = 200
+MAX_DEPTH = None
+MIN_SAMPLES_SPLIT = 2
+MIN_SAMPLES_LEAF = 1
+BOOTSTRAP = True
+RANDOM_STATE = 42
+'id': plate_info.id,
+'region_code': plate_info.region_code, 
+'region': plate_info.region_name,
+'plate_digits': plate_info.digits, 
+'is_government': plate_info.is_government_vehicle,
+'road_advantage': plate_info.government_info['road_advantage'],
+'significance_level': plate_info.government_info['significance_level'],
+
