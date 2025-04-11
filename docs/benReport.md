@@ -15,3 +15,24 @@ Feature importances calculated and sorted:
 38  region_Luhansk People's Republic  9.086658e-07
 43    region_Nenets Autonomous Okrug  3.472056e-07
 10                   region_Baikonur  0.000000e+00
+
+SMAPE: 96.18%
+N_ESTIMATORS = 150
+MAX_DEPTH = 20
+MIN_SAMPLES_SPLIT = 5
+RANDOM_STATE = 42
+
+SMAPE: 58.43%
+N_ESTIMATORS = 200
+MAX_DEPTH = None
+MIN_SAMPLES_SPLIT = 2
+MIN_SAMPLES_LEAF = 1
+BOOTSTRAP = True
+RANDOM_STATE = 42
+'id': plate_info.id,
+'region_code': plate_info.region_code, 
+'region': plate_info.region_name,
+'plate_digits': plate_info.digits, 
+'is_government': plate_info.is_government_vehicle,
+'road_advantage': plate_info.government_info['road_advantage'],
+'significance_level': plate_info.government_info['significance_level'],
