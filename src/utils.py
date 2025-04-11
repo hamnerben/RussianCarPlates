@@ -13,8 +13,10 @@ def get_license_plate_info_list(train=True):
       # create the plate_info object
       id = row[0]
       plate_number = row[1] 
+      plate_date = row[2]
       plate_info = parse_license_plate(id, plate_number)
-      if(train):
+      plate_info.date = plate_date
+      if (train):
         price = row[3]
         plate_info.price = price
       # append to the list
@@ -62,7 +64,8 @@ def seeShapeOfPlateInfo(samples=20):
     print(f"    description: {plate_info.government_info['description']}")
     print(f"    forbidden_to_buy: {plate_info.government_info['forbidden_to_buy']}")
     print(f"    road_advantage: {plate_info.government_info['road_advantage']}")
-    print(f"    significance_level: {plate_info.government_info['significance_level']}")   
+    print(f"    significance_level: {plate_info.government_info['significance_level']}") 
+    print(f"  date: {plate_info.date}")  
 
 if __name__ == "__main__":
   seeShapeOfPlateInfo(10_000)
