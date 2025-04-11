@@ -5,6 +5,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV
 from utils import get_license_plate_info_list
+from datetime import datetime
 
 import csv
 import numpy as np
@@ -37,6 +38,10 @@ data = pd.DataFrame([{
     'region_code': plate_info.region_code,  # Include region code for potential future use
     'plate_digits': plate_info.digits,  # Include digits for potential future use
     'plate_length': len(plate_info.plate_number),  # Include plate length for potential future use
+    'year': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').year,  # Extract year
+    'month': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').month,  # Extract month
+    'day_of_week': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').weekday(),  # Extract day of the week
+    'day_of_year': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').timetuple().tm_yday,  # Extract day of the year
 } for plate_info in plate_info_list])
 
 # Handle categorical data (e.g., region) using one-hot encoding
@@ -93,6 +98,10 @@ test_data = pd.DataFrame([{
     'region_code': plate_info.region_code,  # Include region code for potential future use
     'plate_digits': plate_info.digits,  # Include digits for potential future use
     'plate_length': len(plate_info.plate_number),  # Include plate length for potential future use
+    'year': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').year,  # Extract year
+    'month': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').month,  # Extract month
+    'day_of_week': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').weekday(),  # Extract day of the week
+    'day_of_year': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').timetuple().tm_yday,  # Extract day of the year
 } for plate_info in test_plate_info_list])
 
 # Handle categorical data (e.g., region) using one-hot encoding
@@ -111,4 +120,4 @@ test_features = test_features.reindex(columns=X.columns, fill_value=0)  # Align 
 test_data['price'] = model.predict(test_features)
 
 # Save predictions to CSV
-test_data[['id', 'price']].to_csv('src/data/submissions/old_forest_predicted_prices.csv', index=False)  # Export only ID and price
+test_data[['id', 'price']].to_csv('src/data/submissions/date_forest_predicted_prices.csv', index=False)  # Export only ID and price

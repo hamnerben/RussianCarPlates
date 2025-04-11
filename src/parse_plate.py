@@ -67,6 +67,12 @@ class LicensePlateInfo:
     def price(self, value):
         self._price = value    
 
+    @property
+    def date(self): return self._date
+    @date.setter
+    def date(self, value):
+        self._date = value
+
     def to_dict(self):
         return {
             'valid': self._valid,
@@ -80,10 +86,11 @@ class LicensePlateInfo:
             'error': self._error,
             'price': self._price,
             'plate_number': self._plate_number,
-            'id': self._id
+            'id': self._id,
+            'date': self._date
         }
 
-def parse_license_plate(id, plate_number, price=None):
+def parse_license_plate(id, plate_number, price = None):
     VALID_LETTERS = set('ABEKMHOPCTYX')
     plate_info = LicensePlateInfo()
 
@@ -128,6 +135,7 @@ def parse_license_plate(id, plate_number, price=None):
     plate_info._price = price
     plate_info._plate_number = plate_number
     plate_info._id = id
+    plate_info._date = None  # Placeholder for date, can be set later
 
     # Default government_info for non-government plates
     plate_info._government_info = {
