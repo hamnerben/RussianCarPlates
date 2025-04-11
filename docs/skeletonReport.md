@@ -9,6 +9,8 @@ models:
         - added in features like road advantage, significance. slight improvement
         - scaling the features didn't seem to help
         - added more features (region code, plate digits, plate length) and used grid search to find better hyperparams. this took way longer to run, but finally showed a significant improvement. also evaluated the importance of the features, so we could remove the unnecessary features
+        - took out the gridsearch and it somehow was better? not sure how
+        - added in the dates to the features, didnt help
 
 
 
