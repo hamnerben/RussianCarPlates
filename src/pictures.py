@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 
 
-timestamps = ['Before tuning', 'GridSearch', 'Final']
-smape_values = [98.08313, 69.786444, 58.4444935]
+timestamps = ['Before tuning', 'Intitial GridSearch', 'Optimized Parameters', 'Added Year']
+smape_values = [98.9426, 70.0413, 60.1560, 58.500]
 
 # Plot SMAPE
 plt.figure(figsize=(10, 5))
