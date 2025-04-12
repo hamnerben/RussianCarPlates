@@ -24,7 +24,7 @@ for plate in train_plates:
         numbers.append(plate.digits)
         region_code.append(plate.region_code)
 
-# --- Build vocabulary for letters ---
+# --- Build vocabulary forqw letters ---
 vocab = {}
 def build_vocab(letters):
     for seq in letters:
@@ -108,11 +108,14 @@ dropout = 0.3
 
 model = RNNModel(vocab_size, embed_size, hidden_size, num_layers, dropout).to(device)
 
+# model.load_state_dict(torch.load("rnn_model.pth"))
+#load existing model
+
 criterion = nn.HuberLoss(delta=1.0)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # --- Training ---
-epochs = 5
+epochs = 75
 for epoch in range(epochs):
     model.train()
     total_loss = 0.0
