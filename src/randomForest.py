@@ -2,8 +2,8 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import GridSearchCV
+# from sklearn.preprocessing import StandardScaler
+# from sklearn.model_selection import GridSearchCV
 from utils import get_license_plate_info_list
 from datetime import datetime
 
