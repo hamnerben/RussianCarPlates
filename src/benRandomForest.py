@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from utils import get_license_plate_info_list
 import numpy as np
+from datetime import datetime
 
 # =====================
 # Tuned Hyperparameters
@@ -14,7 +15,7 @@ MIN_SAMPLES_SPLIT = 2
 MIN_SAMPLES_LEAF = 1
 BOOTSTRAP = True
 RANDOM_STATE = 42
-FILE_NAME = "ben_top_features"
+FILE_NAME = "ben_main_features_with_year"
 
 # =====================
 # SMAPE Function
@@ -38,6 +39,10 @@ data = pd.DataFrame([{
     'is_government': plate_info.is_government_vehicle,
     'road_advantage': plate_info.government_info['road_advantage'],
     'significance_level': plate_info.government_info['significance_level'],
+    'year': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').year,
+    # 'month': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').month,  
+    # 'day_of_week': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').weekday(),
+    # 'day_of_year': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').timetuple().tm_yday,  
     'price': float(plate_info.price),
 } for plate_info in plate_info_list])
 
@@ -97,6 +102,10 @@ test_data = pd.DataFrame([{
     'is_government': plate_info.is_government_vehicle,
     'road_advantage': plate_info.government_info['road_advantage'],
     'significance_level': plate_info.government_info['significance_level'],
+    'year': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').year,
+    # 'month': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').month,  
+    # 'day_of_week': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').weekday(),
+    # 'day_of_year': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').timetuple().tm_yday,  
 } for plate_info in test_plate_info_list])
 
 test_data = pd.get_dummies(test_data, columns=['region'], drop_first=True)

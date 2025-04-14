@@ -52,3 +52,28 @@ RANDOM_STATE = 42
 'road_advantage': plate_info.government_info['road_advantage'],
 'significance_level': plate_info.government_info['significance_level'],
 
+SMAPE: 60.90% tried adding datetime, minor decrease 2 percent
+N_ESTIMATORS = 200
+MAX_DEPTH = None
+MIN_SAMPLES_SPLIT = 2
+MIN_SAMPLES_LEAF = 1
+BOOTSTRAP = True
+RANDOM_STATE = 42
+FILE_NAME = "ben_top_features"
+    'id': plate_info.id,
+    'region_code': plate_info.region_code,
+    'region': plate_info.region_name,
+    'plate_digits': plate_info.digits,  
+    'is_government': plate_info.is_government_vehicle,
+    'road_advantage': plate_info.government_info['road_advantage'],
+    'significance_level': plate_info.government_info['significance_level'],
+    'year': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').year,
+    'month': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').month,  
+    'day_of_week': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').weekday(),
+    'day_of_year': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').timetuple().tm_yday,  
+    'price': float(plate_info.price),
+
+
+SMAPE: 59.28% "same as above, but only year, and day of year"
+
+SMAPE: 56.19% "same as above only year" that's good!
