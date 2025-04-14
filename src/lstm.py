@@ -7,13 +7,16 @@ import numpy as np
 import utils
 import csv
 import re
+from datetime import datetime
+import time
+
 
 # Check for GPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using CUDA:", torch.cuda.is_available())
 
 # Prepare training data
-prices, is_government, letters, numbers, region_code = [], [], [], [], []
+prices, is_government, letters, numbers, region_code, years = [], [], [], [], [], []
 
 train_plates = utils.get_license_plate_info_list(train=True)
 for plate in train_plates:
@@ -23,8 +26,9 @@ for plate in train_plates:
         letters.append(plate.letter1 + plate.letter2 + plate.letter3)
         numbers.append(plate.digits)
         region_code.append(plate.region_code)
+        years.append(str(datetime.strptime(plate.date, '%Y-%m-%d %H:%M:%S').year))  # Extract year
 
-# --- Build vocabulary forqw letters ---
+# --- Build vocabulary for letters ---
 vocab = {}
 def build_vocab(letters):
     for seq in letters:
@@ -46,17 +50,19 @@ letters_padded = [seq + [0] * (max_letters_length - len(seq)) for seq in letters
 region_encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
 gov_encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
 number_encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
+year_encoder = OneHotEncoder(handle_unknown='ignore', sparse_output=False)
 
 region_code_one_hot = region_encoder.fit_transform(np.array(region_code).reshape(-1, 1))
 is_government_one_hot = gov_encoder.fit_transform(np.array(is_government).reshape(-1, 1))
 numbers_one_hot = number_encoder.fit_transform(np.array(numbers).reshape(-1, 1))
+years_one_hot = year_encoder.fit_transform(np.array(years).reshape(-1, 1))
 
 # Combine all features
 X_with_features = []
-for l_seq, n_onehot, r_onehot, g_onehot in zip(
-    letters_padded, numbers_one_hot, region_code_one_hot, is_government_one_hot
+for l_seq, n_onehot, r_onehot, g_onehot, y_onehot in zip(
+    letters_padded, numbers_one_hot, region_code_one_hot, is_government_one_hot, years_one_hot
 ):
-    combined = l_seq + n_onehot.tolist() + r_onehot.tolist() + g_onehot.tolist()
+    combined = l_seq + n_onehot.tolist() + r_onehot.tolist() + g_onehot.tolist() + y_onehot.tolist()
     X_with_features.append(combined)
 
 X_tensor = torch.tensor(X_with_features, dtype=torch.long).to(device)
@@ -67,7 +73,7 @@ dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
 
 # --- Model ---
 class RNNModel(nn.Module):
-    def __init__(self, vocab_size, embed_size, hidden_size, num_layers=1, dropout=0.3):
+    def __init__(self, vocab_size, embed_size, hidden_size, num_layers=1, dropout=0.5):
         super(RNNModel, self).__init__()
         self.embedding = nn.Embedding(vocab_size, embed_size)
         self.lstm = nn.LSTM(embed_size, hidden_size, num_layers=num_layers,
@@ -77,7 +83,8 @@ class RNNModel(nn.Module):
         self.fc_input_size = hidden_size + \
                              region_code_one_hot.shape[1] + \
                              is_government_one_hot.shape[1] + \
-                             numbers_one_hot.shape[1]
+                             numbers_one_hot.shape[1] + \
+                             years_one_hot.shape[1]
         self.fc = nn.Linear(self.fc_input_size, 1)
 
     def forward(self, x, mask=None):
@@ -105,17 +112,16 @@ embed_size = 50
 hidden_size = 64
 num_layers = 2
 dropout = 0.3
+lr = 0.01
 
 model = RNNModel(vocab_size, embed_size, hidden_size, num_layers, dropout).to(device)
 
-# model.load_state_dict(torch.load("rnn_model.pth"))
-#load existing model
-
 criterion = nn.HuberLoss(delta=1.0)
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=lr)
 
 # --- Training ---
-epochs = 75
+epochs = 50
+start_time = time.time()
 for epoch in range(epochs):
     model.train()
     total_loss = 0.0
@@ -129,10 +135,15 @@ for epoch in range(epochs):
         optimizer.step()
         total_loss += loss.item()
     print(f"Epoch {epoch+1}, Loss: {total_loss / len(dataloader):.4f}")
-    torch.save(model.state_dict(), "rnn_model.pth")
+end_time = time.time()
+elapsed_time = end_time - start_time
+hours, rem = divmod(elapsed_time, 3600)
+minutes, seconds = divmod(rem, 60)
+print(f"Training completed in {int(hours)}h {int(minutes)}m {int(seconds)}s")
+torch.save(model.state_dict(), "rnn_model.pth")
 
 # --- Prepare test data ---
-test_id, test_letters, test_numbers, test_region_code, test_is_gov = [], [], [], [], []
+test_id, test_letters, test_numbers, test_region_code, test_is_gov, test_years = [], [], [], [], [], []
 
 test_plates = utils.get_license_plate_info_list(train=False)
 for plate in test_plates:
@@ -142,6 +153,7 @@ for plate in test_plates:
         test_numbers.append(plate.digits)
         test_region_code.append(plate.region_code)
         test_is_gov.append('1' if plate._is_government_vehicle else '0')
+        test_years.append(str(datetime.strptime(plate.date, '%Y-%m-%d %H:%M:%S').year))  # Include year
 
 test_letters_encoded = [encode_letters(seq) for seq in test_letters]
 test_letters_padded = [seq + [0] * (max_letters_length - len(seq)) for seq in test_letters_encoded]
@@ -149,12 +161,13 @@ test_letters_padded = [seq + [0] * (max_letters_length - len(seq)) for seq in te
 test_region_code_one_hot = region_encoder.transform(np.array(test_region_code).reshape(-1, 1))
 test_is_government_one_hot = gov_encoder.transform(np.array(test_is_gov).reshape(-1, 1))
 test_numbers_one_hot = number_encoder.transform(np.array(test_numbers).reshape(-1, 1))
+test_years_one_hot = year_encoder.transform(np.array(test_years).reshape(-1, 1))
 
 test_X_with_features = []
-for l_seq, n_onehot, r_onehot, g_onehot in zip(
-    test_letters_padded, test_numbers_one_hot, test_region_code_one_hot, test_is_government_one_hot
+for l_seq, n_onehot, r_onehot, g_onehot, y_onehot in zip(
+    test_letters_padded, test_numbers_one_hot, test_region_code_one_hot, test_is_government_one_hot, test_years_one_hot
 ):
-    combined = l_seq + n_onehot.tolist() + r_onehot.tolist() + g_onehot.tolist()
+    combined = l_seq + n_onehot.tolist() + r_onehot.tolist() + g_onehot.tolist() + y_onehot.tolist()
     test_X_with_features.append(combined)
 
 test_X_tensor = torch.tensor(test_X_with_features, dtype=torch.long).to(device)
@@ -168,11 +181,11 @@ with torch.no_grad():
         mask = (batch != 0).float()
         pred = model(batch, mask=mask)
         predictions.append(pred.item())
-
+filename = f"lstm-with-year-{epochs}-Huber-lr_{lr}_dropout_{dropout}"
 # --- Save to CSV ---
-with open('test_predictions.csv', mode='w', newline='') as file:
+with open(f'src/data/submissions/{filename}.csv', mode='w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(['id', 'price'])
     writer.writerows(zip(test_id, predictions))
 
-print("✅ Predictions exported to test_predictions.csv")
+print(f"✅ Predictions exported to {filename}.csv")
