@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
 
-
+# for forest
 timestamps = ['Before tuning', 'Intitial GridSearch', 'Optimized Parameters', 'Added Year']
 smape_values = [98.9426, 70.0413, 60.1560, 58.500]
 
+# for lstm
 epochsName = ['LSTM1Epoch', 'LSTM5Epoch', '10Epoch', 'LSTM15Epoch', 'LSTM50Epoch', 'LSTM75Epoch', 'LSTM_Huber', 'LSTM_MSE']
 score = [194.46, 174.86, 154.49, 137.4, 78, 81, 77, 78.9]
 

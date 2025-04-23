@@ -87,14 +87,6 @@ if __name__ == "__main__":
     forbidden_to_buy: False
     road_advantage: True
     significance_level: 3'''
-   
-    
-    # if(plate_info.government_info):
-    #   print(f"\nPlate Number: {plate_info.plate_number}, Region: {plate_info.region_name}, Price: {plate_info.price}")
-    #   print(f"  Government Info: {plate_info.government_info['description']}")
-    #   print(f"  Forbidden to buy: {plate_info.government_info['forbidden_to_buy']}")
-    #   print(f"  Road advantage: {plate_info.government_info['road_advantage']}")
-    #   print(f"  Significance level: {plate_info.government_info['significance_level']}")
     
 
     

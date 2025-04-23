@@ -6,7 +6,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV
 from utils import get_license_plate_info_list
 
-import csv
 import numpy as np
 
 # Define SMAPE function
@@ -88,7 +87,7 @@ print(importance_df)
 # Validate the model
 y_pred = model.predict(X_val)
 mse = mean_squared_error(y_val, y_pred)
-smape_score = smape(y_val, y_pred)  # Calculate SMAPE
+smape_score = smape(y_val, y_pred) 
 
 # Print validation metrics
 print(f"Validation Metrics:")
@@ -103,12 +102,12 @@ print("Test data loaded successfully!")
 test_data = pd.DataFrame([{
     'id': plate_info.id,
     'region': plate_info.region_name,
-    'is_government': plate_info.is_government_vehicle,  # Include government status
-    'road_advantage': plate_info.government_info['road_advantage'],  # Include road advantage
-    'significance_level': plate_info.government_info['significance_level'],  # Include significance level
-    'region_code': plate_info.region_code,  # Include region code for potential future use
-    'plate_digits': plate_info.digits,  # Include digits for potential future use
-    'plate_length': len(plate_info.plate_number),  # Include plate length for potential future use
+    'is_government': plate_info.is_government_vehicle,  
+    'road_advantage': plate_info.government_info['road_advantage'],  
+    'significance_level': plate_info.government_info['significance_level'],  
+    'region_code': plate_info.region_code,  
+    'plate_digits': plate_info.digits,  
+    'plate_length': len(plate_info.plate_number),  
 } for plate_info in test_plate_info_list])
 
 print("Test data converted to DataFrame.")
@@ -118,8 +117,8 @@ test_data = pd.get_dummies(test_data, columns=['region'], drop_first=True)
 print("Test data categorical variables encoded using one-hot encoding.")
 
 # Align test data columns with training data columns
-test_features = test_data.drop(columns=['id'])  # Exclude ID from features
-test_features = test_features.reindex(columns=X.columns, fill_value=0)  # Align with training data columns
+test_features = test_data.drop(columns=['id'])  
+test_features = test_features.reindex(columns=X.columns, fill_value=0)  
 print("Test data columns aligned with training data columns.")
 
 # Scale numerical features

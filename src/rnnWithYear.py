@@ -6,7 +6,6 @@ from sklearn.preprocessing import OneHotEncoder
 import numpy as np
 import utils
 import csv
-import re
 from datetime import datetime
 
 filename = "ben_rnn_with_year"

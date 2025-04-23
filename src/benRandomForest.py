@@ -6,9 +6,7 @@ from utils import get_license_plate_info_list
 import numpy as np
 from datetime import datetime
 
-# =====================
 # Tuned Hyperparameters
-# =====================
 N_ESTIMATORS = 200
 MAX_DEPTH = None
 MIN_SAMPLES_SPLIT = 2
@@ -17,20 +15,17 @@ BOOTSTRAP = True
 RANDOM_STATE = 42
 FILE_NAME = "ben_main_features_with_year"
 
-# =====================
+
 # SMAPE Function
-# =====================
 def smape(y_true, y_pred):
     numerator = np.abs(y_true - y_pred)
     denominator = (np.abs(y_true) + np.abs(y_pred)) / 2
     return np.mean(numerator / denominator) * 100
 
-# =====================
+
 # Load and Prepare Training Data
-# =====================
 plate_info_list = get_license_plate_info_list(train=True)
 
-print("lets go!")
 data = pd.DataFrame([{
     'id': plate_info.id,
     'region_code': plate_info.region_code,
@@ -40,9 +35,6 @@ data = pd.DataFrame([{
     'road_advantage': plate_info.government_info['road_advantage'],
     'significance_level': plate_info.government_info['significance_level'],
     'year': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').year,
-    # 'month': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').month,  
-    # 'day_of_week': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').weekday(),
-    # 'day_of_year': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').timetuple().tm_yday,  
     'price': float(plate_info.price),
 } for plate_info in plate_info_list])
 
@@ -56,9 +48,7 @@ y = data['price']
 # Train/Validation split
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=RANDOM_STATE)
 
-# =====================
 # Train the Tuned Model
-# =====================
 print("training the tuned model...")
 model = RandomForestRegressor(
     n_estimators=N_ESTIMATORS,
@@ -70,9 +60,7 @@ model = RandomForestRegressor(
 )
 model.fit(X_train, y_train)
 
-# =====================
 # Evaluate Model
-# =====================
 y_pred = model.predict(X_val)
 mse = mean_squared_error(y_val, y_pred)
 smape_score = smape(y_val, y_pred)
@@ -89,9 +77,7 @@ importance_df = pd.DataFrame({
 print("\nFeature importances calculated and sorted:")
 print(importance_df.head(15))
 
-# =====================
 # Load and Prepare Test Data
-# =====================
 test_plate_info_list = get_license_plate_info_list(train=False)
 
 test_data = pd.DataFrame([{
@@ -103,9 +89,6 @@ test_data = pd.DataFrame([{
     'road_advantage': plate_info.government_info['road_advantage'],
     'significance_level': plate_info.government_info['significance_level'],
     'year': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').year,
-    # 'month': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').month,  
-    # 'day_of_week': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').weekday(),
-    # 'day_of_year': datetime.strptime(plate_info.date, '%Y-%m-%d %H:%M:%S').timetuple().tm_yday,  
 } for plate_info in test_plate_info_list])
 
 test_data = pd.get_dummies(test_data, columns=['region'], drop_first=True)
@@ -114,8 +97,6 @@ test_data = pd.get_dummies(test_data, columns=['region'], drop_first=True)
 test_features = test_data.drop(columns=['id'])
 test_features = test_features.reindex(columns=X.columns, fill_value=0)
 
-# =====================
 # Predict and Save
-# =====================
 test_data['price'] = model.predict(test_features)
 test_data[['id', 'price']].to_csv(f'src/data/submissions/{FILE_NAME}.csv', index=False)

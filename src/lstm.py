@@ -7,11 +7,9 @@ from sklearn.preprocessing import OneHotEncoder
 import numpy as np
 import utils
 import csv
-import re
 from datetime import datetime
 import time
 import pandas as pd
-import seaborn as sns
 
 
 # Check for GPU

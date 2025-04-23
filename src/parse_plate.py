@@ -16,6 +16,7 @@ class LicensePlateInfo:
         self._plate_number = None
         self._id = None
         self._is_government_vehicle = None
+        self._date = None  # Placeholder for date, can be set later
         
         '''plate_info._government_info = {
                 'description': string,
