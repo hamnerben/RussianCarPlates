@@ -119,7 +119,7 @@ class RNNModel(nn.Module):
 
 features = ['learning_rate', 'hidden_size', 'dropout']
 feature = 0 ## i in the loop
-parameters = [[0.1, 0.05, 0.25, 0.5], [2, 4, 8, 16], [0.3,0.5,0.1,0]]
+parameters = [[0.5], [2, 4, 8, 16], [0.3,0.5,0.1,0]]
 parameter = 0 ## j in the loop
 vocab_size = len(vocab) + 1
 embed_size = 50
@@ -130,8 +130,9 @@ for feature in range(len(features)):
 
         if feature == 0:
             lr = parameters[feature][parameter]
+            epochs = 1
         else:
-            lr = 0.1
+            lr = 0.5
         
         if feature == 1:
             hidden_size = parameters[feature][parameter]
